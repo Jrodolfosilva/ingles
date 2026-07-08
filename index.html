@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trilha da Fluência — Planner 360 dias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;460;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* base palette */
+    --black:    #0E0E0E;
+    --white:    #FAFAFA;
+    --gray-mid: #737373;
+    --green:    #67A500;
+    --gray-lt:  #e0e0e0;
+    --card-bg:  #ffffff;
+
+    /* score colors */
+    --score-red:    #e74c3c;
+    --score-orange: #e67e22;
+    --score-yellow: #f1c40f;
+    --score-green:  #67A500;
+
+    /* alert */
+    --alert-bg:  #FDE8E8;
+    --alert-red: #c0392b;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-pill: 20px;
+    --maxw:480px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--white);
+    color:var(--black);
+    font-family:'Inter', -apple-system, sans-serif;
+    font-size:14px;
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--green);}
+  ::selection{background:var(--green); color:#fff;}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:20px 14px 150px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+    padding:20px 4px 24px; border-bottom:1.5px solid var(--gray-lt);
+    margin-bottom:20px;
+  }
+  .hero-text{flex:1; min-width:260px;}
+  .eyebrow{
+    letter-spacing:.06em; text-transform:uppercase;
+    font-size:12px; font-weight:500; color:var(--green); margin:0 0 8px;
+  }
+  h1.title{
+    font-weight:600; font-size:clamp(26px,5vw,36px);
+    margin:0 0 8px; letter-spacing:-0.2px; line-height:1.1;
+  }
+  .title em{font-style:normal; color:var(--green); font-weight:600;}
+  .subtitle{color:var(--gray-mid); max-width:480px; font-size:14px; font-weight:300; margin:0;}
+
+  .ring-box{display:flex; align-items:center; gap:14px;}
+  .ring{
+    width:104px; height:104px; border-radius:50%;
+    background: conic-gradient(var(--score-color, var(--green)) calc(var(--pct,0)*1%), var(--gray-lt) 0);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    transition: background 0.4s ease;
+  }
+  .ring-inner{
+    width:82px; height:82px; border-radius:50%; background:var(--card-bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .ring-inner .num{font-size:22px; font-weight:600; letter-spacing:-0.2px;}
+  .ring-inner .lbl{font-size:9.5px; color:var(--gray-mid); text-transform:uppercase; letter-spacing:.06em;}
+  .ring-stats{font-size:12.5px; color:var(--gray-mid); font-weight:300;}
+  .ring-stats div{margin-bottom:2px;}
+  .ring-stats b{color:var(--black); font-weight:600;}
+
+  /* ---------- CONTROLS ---------- */
+  .controls{
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:18px;
+  }
+  .btn{
+    background:#fff; border:1.5px solid var(--gray-lt); color:var(--black);
+    padding:10px 16px; border-radius:var(--radius-md); font-size:13px; cursor:pointer;
+    font-family:'Inter'; font-weight:500; transition:.15s border-color, .15s background, .1s transform;
+    white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--gray-mid); background:#f2f2f2;}
+  .btn:active{transform:translateY(0);}
+  .btn.dark{background:var(--black); color:var(--white); border-color:var(--black); font-weight:500;}
+  .btn.dark:hover{opacity:.88; background:var(--black); transform:translateY(-1px);}
+  .btn.dark:active{opacity:1; transform:translateY(0);}
+  .btn.green{background:var(--green); color:#fff; border-color:var(--green); font-weight:500;}
+  .btn.green:hover{opacity:.88;}
+  .btn.ghost{background:transparent;}
+  .btn.danger{color:var(--alert-red); border-color:var(--gray-lt);}
+  .btn.danger:hover{border-color:var(--alert-red); background:var(--alert-bg);}
+  .btn:disabled{opacity:.6; cursor:not-allowed; background:var(--gray-mid); color:#fff; border-color:var(--gray-mid);}
+
+  /* ---------- TRAIL NAV (chip style) ---------- */
+  .trail-nav{
+    position:relative; margin: 4px 0 26px;
+    padding: 4px 2px;
+    overflow-x:auto;
+  }
+  .trail-nodes{display:flex; gap:8px; position:relative; z-index:1; min-width:max-content;}
+  .trail-node{
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    padding:10px 12px; border:1.5px solid var(--gray-lt); border-radius:var(--radius-md);
+    background:#fff; transition:.15s border-color, .15s background, .1s transform;
+    min-width:64px;
+  }
+  .trail-node:hover{border-color:var(--gray-mid); background:#f2f2f2; transform:translateY(-1px);}
+  .trail-node.complete{border-color:var(--green); background:#f3f9ea;}
+  .trail-dot{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    background: conic-gradient(var(--score-color,var(--green)) calc(var(--p,0)*1%), var(--gray-lt) 0);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .trail-dot::after{
+    content:''; width:18px; height:18px; border-radius:50%; background:#fff;
+  }
+  .trail-label{font-size:10.5px; color:var(--gray-mid); text-align:center; font-weight:400;}
+  .trail-label b{display:block; color:var(--black); font-size:11px; font-weight:600;}
+
+  /* ---------- STAGE SECTION ---------- */
+  .stage{
+    border:1.5px solid var(--gray-lt); border-radius:var(--radius-lg); margin-bottom:14px;
+    background:var(--card-bg);
+    overflow:hidden; scroll-margin-top: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stage > summary{
+    list-style:none; cursor:pointer; padding:16px 18px; display:flex; align-items:center; gap:14px;
+  }
+  .stage > summary::-webkit-details-marker{display:none;}
+  .stage-num{
+    font-size:13px; font-weight:600; color:#fff; width:28px; height:28px; flex-shrink:0;
+    background:var(--black); border-radius:50%; display:flex; align-items:center; justify-content:center;
+  }
+  .stage-info{flex:1; min-width:0;}
+  .stage-name{font-weight:600; font-size:14.5px; letter-spacing:-0.1px;}
+  .stage-range{font-size:12px; color:var(--gray-mid); font-weight:300;}
+  .stage-bar-wrap{width:100px; flex-shrink:0;}
+  .stage-bar{height:6px; border-radius:4px; background:var(--gray-lt); overflow:hidden;}
+  .stage-bar > i{display:block; height:100%; background:var(--green); border-radius:4px; transition:.3s width, .3s background;}
+  .stage-pct{font-size:11px; color:var(--gray-mid); font-weight:500; text-align:right; margin-top:4px;}
+  .chev{transition:.2s transform; color:var(--gray-mid); flex-shrink:0;}
+  .stage[open] > summary .chev{transform:rotate(90deg);}
+
+  .stage-body{padding:2px 12px 12px;}
+
+  /* ---------- DAY CARD ---------- */
+  .day{
+    background:#fff; border:1.5px solid var(--gray-lt); border-radius:var(--radius-md);
+    margin:8px 6px; padding:12px 14px; scroll-margin-top:18px;
+    transition:.2s border-color, .2s background, .25s opacity;
+  }
+  .day.done{
+    border-color: var(--gray-lt); background:#f2f2f2; opacity:.5;
+  }
+  .day.done:hover, .day.done:focus-within{opacity:.85;}
+  .day.done .day-num{background:var(--gray-mid);}
+  .day.done .task input:checked{background:var(--gray-mid); border-color:var(--gray-mid);}
+  .day.flash{animation:flash 1s ease;}
+  @keyframes flash{ 0%{box-shadow:0 0 0 3px var(--green);} 100%{box-shadow:0 0 0 0 transparent;} }
+  .day-head{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .day-num{
+    font-weight:600; font-size:12.5px;
+    background:var(--black); color:#fff; padding:4px 10px; border-radius:var(--radius-pill);
+    flex-shrink:0;
+  }
+  .day-mini{height:5px; flex:1; background:var(--gray-lt); border-radius:3px; overflow:hidden;}
+  .day-mini > i{display:block; height:100%; background:var(--green);}
+  .day-toggle-all{
+    font-size:11px; color:var(--gray-mid); cursor:pointer; background:none; border:none;
+    font-family:'Inter'; font-weight:500; padding:4px 8px; flex-shrink:0; border-radius:var(--radius-sm);
+  }
+  .day-toggle-all:hover{color:var(--black); background:#f2f2f2;}
+
+  .task{
+    display:flex; align-items:flex-start; gap:10px; padding:6px 4px; font-size:13.5px;
+    color:var(--black); font-weight:300; cursor:pointer; border-radius:var(--radius-sm);
+  }
+  .task:hover{background:#f7f7f7;}
+  .task input{
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; flex-shrink:0; margin-top:1px;
+    border:1.5px solid var(--gray-lt); border-radius:6px; cursor:pointer; position:relative;
+    background:#fff; transition:.12s border-color, .12s background;
+  }
+  .task input:hover{border-color:var(--gray-mid);}
+  .task input:checked{background:var(--green); border-color:var(--green);}
+  .task input:checked::after{
+    content:''; position:absolute; left:5.5px; top:1.5px; width:4px; height:9px;
+    border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+  .task span{flex:1;}
+  .task.checked span{color:var(--gray-mid); text-decoration:line-through; text-decoration-color:var(--gray-lt);}
+  .task a{color:var(--green); text-decoration:underline; text-decoration-color:rgba(103,165,0,.35); font-weight:400;}
+  .task a:hover{text-decoration-color:var(--green);}
+
+  /* ---------- FOOTER BAR ---------- */
+  .footbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:20;
+    background:linear-gradient(180deg, transparent, var(--white) 40%);
+    padding:18px 16px 16px; display:flex; justify-content:center;
+  }
+  .footbar-inner{
+    max-width:var(--maxw); width:100%; display:flex; align-items:center; gap:14px;
+    background:#fff; border:1.5px solid var(--gray-lt); border-radius:var(--radius-lg); padding:12px 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.10);
+  }
+  .footbar-bar{flex:1; height:8px; background:var(--gray-lt); border-radius:6px; overflow:hidden;}
+  .footbar-bar > i{display:block; height:100%; background:var(--green); border-radius:6px; transition:.4s width;}
+  .footbar-txt{font-size:12.5px; color:var(--gray-mid); font-weight:500; white-space:nowrap;}
+
+  .empty-tasks{font-size:12.5px; color:var(--gray-mid); font-weight:300; font-style:italic; padding:4px 4px 8px;}
+
+  .status{
+    position:fixed; top:14px; right:14px; font-size:12px; font-weight:500;
+    color:var(--black); background:#fff; border:1.5px solid var(--gray-lt); padding:6px 12px;
+    border-radius:var(--radius-pill); opacity:0; transition:.3s opacity; z-index:30;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .status.show{opacity:1;}
+  .status.err{color:var(--alert-red); background:var(--alert-bg); border-color:#f5c6c6;}
+
+  .loading-screen{
+    position:fixed; inset:0; background:var(--white); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:14px; z-index:50;
+  }
+  .loading-screen .spin{
+    width:32px; height:32px; border-radius:50%; border:3px solid var(--gray-lt); border-top-color:var(--green);
+    animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-screen p{color:var(--gray-mid); font-size:13px; font-weight:400;}
+
+  @media (max-width:640px){
+    .hero{flex-direction:column; align-items:flex-start;}
+    .ring-box{align-self:flex-start;}
+    .footbar-txt{display:none;}
+  }
+</style>
+
+</head>
+<body>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="spin"></div>
+  <p>carregando sua trilha…</p>
+</div>
+
+<div class="status" id="statusMsg">salvo ✓</div>
+
+<div class="wrap" id="app" style="display:none;">
+
+  <div class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">Cronograma dos Fluentes · 360 dias</p>
+      <h1 class="title">Trilha da <em>Fluência</em></h1>
+      <p class="subtitle">Sua jornada diária de inglês, do dia 1 ao dia 360, organizada em 12 meses. Marque o que você concluiu e acompanhe seu progresso.</p>
+    </div>
+    <div class="ring-box">
+      <div class="ring" id="ringOuter">
+        <div class="ring-inner">
+          <div class="num" id="ringPct">0%</div>
+          <div class="lbl">concluído</div>
+        </div>
+      </div>
+      <div class="ring-stats">
+        <div><b id="statDaysDone">0</b>/360 dias</div>
+        <div><b id="statItemsDone">0</b>/<span id="statItemsTotal">0</span> tarefas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn green" id="currentDayBtn" style="flex:1;">Dia atual</button>
+  </div>
+
+  <div class="trail-nav" id="trailNav">
+    <div class="trail-nodes" id="trailNodes"></div>
+  </div>
+
+  <div id="stages"></div>
+
+</div>
+
+<div class="footbar">
+  <div class="footbar-inner">
+    <div class="footbar-txt" id="footTxt">0% concluído</div>
+    <div class="footbar-bar"><i id="footBarFill" style="width:0%"></i></div>
+  </div>
+</div>
+
+<script>
+const DAYS = [{"d": 1, "stage": "Mês 1", "tasks": ["Escreva um texto se apresentando (nome, origem, profissão) e poste na Comunidade.", "Leia seu texto em voz alta e pratique a pronúncia."]}, {"d": 2, "stage": "Mês 1", "tasks": ["Escreva frases sobre seu dia usando Reverso Context ou Collins.", "Mude seus dispositivos e redes sociais para o inglês; anote palavras novas."]}, {"d": 3, "stage": "Mês 1", "tasks": ["Acompanhe um canal gringo no YouTube (lista de canais / módulo iso-imersão).", "Assista ao vídeo sem legendas, depois com legendas, e anote palavras."]}, {"d": 4, "stage": "Mês 1", "tasks": ["Aprenda com uma música no Lyricstraining, nível Beginner.", "Assista a um vídeo do canal escolhido e tente identificar palavras."]}, {"d": 5, "stage": "Mês 1", "tasks": ["Procure vocabulário de objetos de um cômodo da casa usando Collins.", "Cole notas adesivas com os nomes dos objetos."]}, {"d": 6, "stage": "Mês 1", "tasks": ["Converse com o ChatGPT usando prompt de apresentação.", "Peça ao ChatGPT para corrigir a conversa e anote erros."]}, {"d": 7, "stage": "Mês 1", "tasks": ["Escreva um resumo da semana em inglês e poste na Comunidade.", "Assista a um filme/série em inglês com legendas, imitando falas."]}, {"d": 8, "stage": "Mês 1", "tasks": ["Escolha uma receita no Tasty, leia ingredientes e modo de preparo.", "Assista ao vídeo da receita e pratique a pronúncia."]}, {"d": 9, "stage": "Mês 1", "tasks": ["Escreva sua receita favorita em inglês usando Reverso Context/Collins.", "Faça atividade sobre Food no Wordwall."]}, {"d": 10, "stage": "Mês 1", "tasks": ["Escute a notícia 'People throw away food' (nível 1).", "Leia a notícia e responda no comentário 'What do you think about the news'."]}, {"d": 11, "stage": "Mês 1", "tasks": ["Assista a um tutorial de culinária no YouTube.", "Anote ingredientes de uma receita e poste na Comunidade."]}, {"d": 12, "stage": "Mês 1", "tasks": ["Faça o Quiz sobre comida (filme/snack).", "Analise hábitos alimentares em colunas healthy/unhealthy."]}, {"d": 13, "stage": "Mês 1", "tasks": ["Escute o Podcast 'The smell of coffee' e leia a transcrição.", "Poste na Comunidade se gosta de café e a frequência."]}, {"d": 14, "stage": "Mês 1", "tasks": ["Assista a um programa de TV sobre culinária.", "Grave/escreva um mini-roteiro de receita para apresentar."]}, {"d": 15, "stage": "Mês 1", "tasks": ["Crie uma lista de compras com vocabulário do dia-a-dia (Collins).", "Crie cartões físicos com as palavras e sorteie-os em frases."]}, {"d": 16, "stage": "Mês 1", "tasks": ["Explore o ESL Lab (áudios sobre compras).", "Imagine um diálogo em um supermercado e compartilhe na Comunidade."]}, {"d": 17, "stage": "Mês 1", "tasks": ["Assista a um tutorial DIY no YouTube só pelo áudio.", "Escreva sua rotina diária em inglês."]}, {"d": 18, "stage": "Mês 1", "tasks": ["Faça a palavra cruzada do dia no The Atlantic.", "Leia embalagens de produtos no supermercado."]}, {"d": 19, "stage": "Mês 1", "tasks": ["Leia carta/e-mail do dia anterior em voz alta.", "Escreva uma carta/e-mail simples para um amigo."]}, {"d": 20, "stage": "Mês 1", "tasks": ["Narre sua rotina usando o texto do dia 3 (ou grave-se).", "Pesquise um restaurante famoso e leia o menu/história em voz alta."]}, {"d": 21, "stage": "Mês 1", "tasks": ["Explore comics/graphic novels (Project Gutenberg, Webtoon, Tapas, Comic Fury)."]}, {"d": 22, "stage": "Mês 1", "tasks": ["Leia posts de redes sociais de artistas favoritos (Instagram/Facebook/X).", "Assista 15s de série/filme sem legendas e anote o que entendeu."]}, {"d": 23, "stage": "Mês 1", "tasks": ["Leia biografia curta de um artista (Wikipedia ou site oficial).", "Use Lyrics Training com um artista/música específica."]}, {"d": 24, "stage": "Mês 1", "tasks": ["Leia notícia sobre o artista (TMZ ou Daily Mail).", "Tente imitar o artista (entonação, trejeitos, pronúncia)."]}, {"d": 25, "stage": "Mês 1", "tasks": ["Leia em voz alta trecho de notícia/posts do artista.", "Procure vocabulário de objetos de um cômodo (quarto) e cole notas."]}, {"d": 26, "stage": "Mês 1", "tasks": ["Escreva 3 frases sobre seu dia e compartilhe na Comunidade.", "Ouça diálogos simples no Elllo (nível iniciante)."]}, {"d": 27, "stage": "Mês 1", "tasks": ["Faça um quiz divertido no Merriam Webster.", "Crie frases com palavras de biografias/letras estudadas."]}, {"d": 28, "stage": "Mês 1", "tasks": ["Utilize palavras anotadas em dias anteriores.", "Escute uma entrevista em podcast (The Armchair Expert / Ted Interview)."]}, {"d": 29, "stage": "Mês 1", "tasks": ["Ouça o audiobook grátis do dia no Blinkist.", "Mantenha um diário da semana; compartilhe na Comunidade."]}, {"d": 30, "stage": "Mês 1", "tasks": ["Visite BBC News ou CNN e leia artigos de interesse.", "Procure antônimos/sinônimos das palavras anotadas (Thesaurus)."]}, {"d": 31, "stage": "Mês 2", "tasks": ["Leia um poema em voz alta (Project Gutenberg).", "Jogue uma partida de Letter Box."]}, {"d": 32, "stage": "Mês 2", "tasks": ["Assista 15s de série/filme/vídeo sem legendas, anote o entendido."]}, {"d": 33, "stage": "Mês 2", "tasks": ["Assista novamente com legendas e compare com suas anotações.", "Explore comics/graphic novels (Project Gutenberg, Webtoon, Tapas, Comic Fury)."]}, {"d": 34, "stage": "Mês 2", "tasks": ["Fale um trava-língua (British Council).", "Escreva resenha em inglês de um local público (Google)."]}, {"d": 35, "stage": "Mês 2", "tasks": ["Leia o diário semanal em voz alta; peça feedback na Comunidade.", "Escreva resumo em inglês sobre o audiobook do dia 29."]}, {"d": 36, "stage": "Mês 2", "tasks": ["Assista a um TedTalks do tema de interesse.", "Escreva resumo e compartilhe na Comunidade."]}, {"d": 37, "stage": "Mês 2", "tasks": ["Escreva 3 frases sobre o dia (Reverso Context).", "Jogue uma partida de Connections."]}, {"d": 38, "stage": "Mês 2", "tasks": ["Pratique conversa com o ChatGPT sobre um assunto à escolha.", "Peça ao ChatGPT para corrigir a conversa."]}, {"d": 39, "stage": "Mês 2", "tasks": ["Pratique compreensão auditiva com vídeo (15s sem legenda, repita).", "Repita o processo assistindo trechos seguintes."]}, {"d": 40, "stage": "Mês 2", "tasks": ["Escreva sobre sua família (membros, idades, interesses) e confira no Grammarly.", "Pratique vocabulário com caça-palavras 'family members'."]}, {"d": 41, "stage": "Mês 2", "tasks": ["Escute rádios do mundo no Radio Garden.", "Pratique trava-língua (Tongue Twister)."]}, {"d": 42, "stage": "Mês 2", "tasks": ["Leia biografia de uma personalidade (Wikipedia/site oficial).", "Escreva 5 perguntas de entrevista para essa personalidade."]}, {"d": 43, "stage": "Mês 2", "tasks": ["Jogue o Baba Dum em inglês.", "Faça uma oração em inglês (The Prayer Wall / Click to Pray)."]}, {"d": 44, "stage": "Mês 2", "tasks": ["Acompanhe scripts de filmes (Simply Scripts).", "Sintonize rádio em inglês e ouça anúncios comerciais."]}, {"d": 45, "stage": "Mês 2", "tasks": ["Ouça/leia histórias no Storyline.", "Imagine comprar ingresso para um evento; escreva o diálogo e compartilhe."]}, {"d": 46, "stage": "Mês 2", "tasks": ["Escolha um jogo no TinyTap.", "Escreva sobre uma viagem/férias recente e compartilhe na Comunidade."]}, {"d": 47, "stage": "Mês 2", "tasks": ["Encontre encenações de situações cotidianas; pratique com alguém ou ChatGPT.", "Leia e interaja em fóruns online (Comunidade ou Reddit)."]}, {"d": 48, "stage": "Mês 2", "tasks": ["Experimente escrever poemas ou letras de música; poste na Comunidade.", "Use Vocabulary.com 'Random Word' e faça quizzes."]}, {"d": 49, "stage": "Mês 2", "tasks": ["Faça uma oração em inglês.", "Jogue Gartic com amigos ou na Comunidade."]}, {"d": 50, "stage": "Mês 2", "tasks": ["Acesse Best of Affirmations e leia uma afirmação em voz alta.", "Assista a um vídeo da lista de canais (iso-imersão)."]}, {"d": 51, "stage": "Mês 2", "tasks": ["Explore English Vocabulary Exercises.", "Escute 'The Little Prince' nível 1 e repita em voz alta."]}, {"d": 52, "stage": "Mês 2", "tasks": ["Escreva sobre uma pessoa que você admira.", "Assista a desenhos infantis (Peekaboo Kidz, The Kiboomers, Cocomelon)."]}, {"d": 53, "stage": "Mês 2", "tasks": ["Assista a um TedTalks.", "Leia biografias de personagens históricos no Ducksters."]}, {"d": 54, "stage": "Mês 2", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Narre os feitos de um personagem histórico com suas palavras."]}, {"d": 55, "stage": "Mês 2", "tasks": ["Narre uma história/fofoca em inglês; grave-se.", "Explore o ESL Lab."]}, {"d": 56, "stage": "Mês 2", "tasks": ["Escreva sobre seu hobby favorito."]}, {"d": 57, "stage": "Mês 2", "tasks": ["Assista a tutorial DIY no YouTube.", "Jogue partidas de Letter Box."]}, {"d": 58, "stage": "Mês 2", "tasks": ["Escreva carta/e-mail contando uma novidade.", "Procure vocabulário de objetos da cozinha e cole notas adesivas."]}, {"d": 59, "stage": "Mês 2", "tasks": ["Leia posts de redes sociais de artistas favoritos.", "Navegue pela seção Listen & Watch do BBC Learning English."]}, {"d": 60, "stage": "Mês 2", "tasks": ["Faça um quiz no Merriam Webster.", "Selecione e escute rádios do mundo (Radio Garden)."]}, {"d": 61, "stage": "Mês 3", "tasks": ["Leia/escute mais de 'The Little Prince'.", "Pratique trava-língua (Tongue Twister)."]}, {"d": 62, "stage": "Mês 3", "tasks": ["Trabalhe a confiança com Best of Affirmations.", "Pratique com trava-língua e divirta-se."]}, {"d": 63, "stage": "Mês 3", "tasks": ["Assista tutorial DIY pelo áudio.", "Escreva carta/e-mail contando novidade.", "Explore comics/graphic novels."]}, {"d": 64, "stage": "Mês 3", "tasks": ["Leia embalagens de produtos no supermercado.", "Ouça sobre Oily Fish e responda a pergunta; compartilhe."]}, {"d": 65, "stage": "Mês 3", "tasks": ["Ouça/leia histórias no Storyline.", "Leia um poema em voz alta (Project Gutenberg)."]}, {"d": 66, "stage": "Mês 3", "tasks": ["Escolha uma receita no Tasty.", "Assista ao vídeo da receita e pratique pronúncia."]}, {"d": 67, "stage": "Mês 3", "tasks": ["Aprenda com sua música favorita (Lyricstraining, 2 níveis).", "Anote palavras da música e busque significado."]}, {"d": 68, "stage": "Mês 3", "tasks": ["Fale um trava-língua.", "Jogue uma partida de Connections."]}, {"d": 69, "stage": "Mês 3", "tasks": ["Jogue o Baba Dum em inglês.", "Leia e interaja em fóruns (Comunidade/Reddit)."]}, {"d": 70, "stage": "Mês 3", "tasks": ["Jogue o Baba Dum associando palavras a imagens.", "Escreva sua rotina diária em inglês."]}, {"d": 71, "stage": "Mês 3", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Mantenha um diário da semana."]}, {"d": 72, "stage": "Mês 3", "tasks": ["Explore o ESL Lab (compras, visitas, shopping).", "Imagine estar num shopping; escreva o diálogo com o guarda."]}, {"d": 73, "stage": "Mês 3", "tasks": ["Escolha um jogo no TinyTap.", "Escreva resenha de um filme/série recente (Grammarly)."]}, {"d": 74, "stage": "Mês 3", "tasks": ["Escreva sobre parentes distantes (Grammarly).", "Pratique vocabulário sobre family no Word Wall."]}, {"d": 75, "stage": "Mês 3", "tasks": ["Explore English Vocabulary Exercises.", "Pegue scripts de filmes (Simply Scripts)."]}, {"d": 76, "stage": "Mês 3", "tasks": ["Ouça guias turísticos em áudio de Rick Steves.", "Crie cartões físicos com palavras novas do guia."]}, {"d": 77, "stage": "Mês 3", "tasks": ["Leia o diário semanal em voz alta; peça feedback.", "Escreva resumo sobre o audiobook do dia 17."]}, {"d": 78, "stage": "Mês 3", "tasks": ["Leia notícia sobre um artista (TMZ/Daily Mail).", "Tente imitar o artista."]}, {"d": 79, "stage": "Mês 3", "tasks": ["Assista a um TedTalks.", "Leia biografia de personagens históricos (Ducksters)."]}, {"d": 80, "stage": "Mês 3", "tasks": ["Leia biografia de personagens históricos.", "Imagine ser jornalista e crie 5 perguntas de entrevista."]}, {"d": 81, "stage": "Mês 3", "tasks": ["Leia em voz alta trecho de biografia (Google Tradutor Inglês>Inglês se precisar).", "Encontre e leia histórias curtas (Gutenberg/Wattpad)."]}, {"d": 82, "stage": "Mês 3", "tasks": ["Encontre e leia histórias curtas.", "Faça uma oração em inglês ou crie a sua."]}, {"d": 83, "stage": "Mês 3", "tasks": ["Escreva sobre viagem/férias recentes.", "Faça a palavra cruzada do dia (The Atlantic)."]}, {"d": 84, "stage": "Mês 3", "tasks": ["Faça a palavra cruzada do dia.", "Assista a desenhos infantis para praticar ritmo/entonação."]}, {"d": 85, "stage": "Mês 3", "tasks": ["Converse com o ChatGPT sobre sua cidade.", "Peça correção da conversa ao ChatGPT."]}, {"d": 86, "stage": "Mês 3", "tasks": ["Leia/escute mais de 'The Little Prince'.", "Escreva resumo e sua experiência; poste na Comunidade."]}, {"d": 87, "stage": "Mês 3", "tasks": ["Ouça/leia histórias no Storyline.", "Realize atividade sobre o tema no Wordwall."]}, {"d": 88, "stage": "Mês 3", "tasks": ["Experimente escrever poemas/letras de música; poste na Comunidade.", "Jogue Gartic com amigos ou na Comunidade."]}, {"d": 89, "stage": "Mês 3", "tasks": ["Escreva carta/e-mail para praticar vocabulário de relacionamento.", "Leia em voz alta a carta escrita."]}, {"d": 90, "stage": "Mês 3", "tasks": ["Crie uma lista de compras com vocabulário diferenciado.", "Imagine um diálogo num supermercado/loja de departamentos."]}, {"d": 91, "stage": "Mês 4", "tasks": ["Use Lyrics Training com um artista/música específica.", "Pesquise restaurante famoso e leia menu/história em voz alta."]}, {"d": 92, "stage": "Mês 4", "tasks": ["Visite BBC News/CNN e leia artigos.", "Jogue uma partida de Connections."]}, {"d": 93, "stage": "Mês 4", "tasks": ["Leia a mesma notícia de ontem e procure palavras novas.", "Escreva resumo e opinião; poste na Comunidade."]}, {"d": 94, "stage": "Mês 4", "tasks": ["Assista a vídeo do Ted Ed sem legendas, depois com legendas.", "Faça atividades do site (Think + quiz); poste na Comunidade."]}, {"d": 95, "stage": "Mês 4", "tasks": ["Escolha um jogo no TinyTap.", "Escreva sobre uma pessoa que você admira (Grammarly)."]}, {"d": 96, "stage": "Mês 4", "tasks": ["Escolha um episódio de Podcast e escute (baixe transcrição).", "Anote palavras e pesquise sinônimos (dicionário)."]}, {"d": 97, "stage": "Mês 4", "tasks": ["Jogue uma partida de Cruzadinhas.", "Use palavras do jogo para formar frases."]}, {"d": 98, "stage": "Mês 4", "tasks": ["Faça um texto sobre a semana/rotina; poste na Comunidade.", "Relaxe assistindo a um filme/série com legendas."]}, {"d": 99, "stage": "Mês 4", "tasks": ["Faça um quiz no Merriam Webster.", "Selecione e escute rádios do mundo (Radio Garden)."]}, {"d": 100, "stage": "Mês 4", "tasks": ["Visite BBC News/CNN e leia artigos.", "Procure antônimos/sinônimos (Thesaurus)."]}, {"d": 101, "stage": "Mês 4", "tasks": ["Assista 15s de série/filme sem legendas, anote o entendido.", "Escreva resumo e avalie desempenho."]}, {"d": 102, "stage": "Mês 4", "tasks": ["Pratique conversa telefônica simulada com amigo/ChatGPT.", "Leia e interaja em fóruns (Comunidade/Reddit)."]}, {"d": 103, "stage": "Mês 4", "tasks": ["Escreva resenha de um local público (Google).", "Explore comics/graphic novels."]}, {"d": 104, "stage": "Mês 4", "tasks": ["Selecione scripts de filmes (Simply Scripts).", "Jogue partidas de Letter Box."]}, {"d": 105, "stage": "Mês 4", "tasks": ["Ouça diálogos simples no Elllo (iniciante).", "Anote palavras novas e crie 5 frases; compartilhe."]}, {"d": 106, "stage": "Mês 4", "tasks": ["Assista a vídeo sobre casas incríveis; anote palavras.", "Faça um texto descrevendo a casa e sua opinião."]}, {"d": 107, "stage": "Mês 4", "tasks": ["Pratique simulação de fala apresentando a casa do vídeo.", "Faça um quiz no Merriam Webster."]}, {"d": 108, "stage": "Mês 4", "tasks": ["Ouça/leia histórias no Storyline.", "Faça a palavra cruzada do dia (The Atlantic)."]}, {"d": 109, "stage": "Mês 4", "tasks": ["Leia/escute mais de 'The Little Prince'.", "Procure antônimos/sinônimos das palavras novas."]}, {"d": 110, "stage": "Mês 4", "tasks": ["Pesquise mais sobre artistas de ontem (Wikipedia).", "Pratique simulação de entrevista jornalística."]}, {"d": 111, "stage": "Mês 4", "tasks": ["Pesquise no YouTube entrevista do artista; compare com a sua.", "Escreva texto comparando biografia e entrevista; poste."]}, {"d": 112, "stage": "Mês 4", "tasks": ["Jogue uma partida de Spelling Bee (NYT).", "Faça frases com as palavras encontradas."]}, {"d": 113, "stage": "Mês 4", "tasks": ["Escolha e faça um Word Search; crie frases.", "Assista a filme/série com legendas, imite personagens."]}, {"d": 114, "stage": "Mês 4", "tasks": ["Procure vocabulário de objetos da garagem; cole notas.", "Mantenha um diário em inglês (grave pensamentos)."]}, {"d": 115, "stage": "Mês 4", "tasks": ["Visite BBC News/CNN e leia artigos.", "Jogue uma partida de Connections."]}, {"d": 116, "stage": "Mês 4", "tasks": ["Escreva comentário em post de um artista.", "Leia a mesma notícia de ontem e procure palavras novas."]}, {"d": 117, "stage": "Mês 4", "tasks": ["Assista a um TedTalks (sem legendas, anote).", "Escreva resumo e compartilhe na Comunidade."]}, {"d": 118, "stage": "Mês 4", "tasks": ["Trabalhe a confiança com Best of Affirmations.", "Escolha episódio de Podcast e baixe transcrição."]}, {"d": 119, "stage": "Mês 4", "tasks": ["É hora de trabalhar na sua confiança (Affirmations).", "Sintonize rádio (Radio Uk) e ouça anúncios."]}, {"d": 120, "stage": "Mês 4", "tasks": ["Fale um trava-língua.", "Assista vídeo no YouTube praticando compreensão auditiva."]}, {"d": 121, "stage": "Mês 5", "tasks": ["Assista vídeo no YouTube (compreensão auditiva, repita trechos).", "Pratique pronúncia repetindo o vídeo; compartilhe experiência."]}, {"d": 122, "stage": "Mês 5", "tasks": ["Leia notícia na National Geographic.", "Anote palavras compreendidas e pesquise sinônimos."]}, {"d": 123, "stage": "Mês 5", "tasks": ["Pesquise no YouTube vídeo sobre a notícia lida ontem.", "Escreva opinião sobre notícia e vídeo (Grammarly); poste."]}, {"d": 124, "stage": "Mês 5", "tasks": ["Narre a notícia e o vídeo assistido, usando vocabulário recente.", "Grave um vídeo/áudio narrando; poste na Comunidade."]}, {"d": 125, "stage": "Mês 5", "tasks": ["Aprenda com sua música favorita (Lyricstraining); cante ao final.", "Jogue uma partida de Wordle."]}, {"d": 126, "stage": "Mês 5", "tasks": ["Faça 5 frases sobre o seu dia (dicionário Oxford).", "Faça frases com palavras novas da música; poste."]}, {"d": 127, "stage": "Mês 5", "tasks": ["Converse com o ChatGPT sobre o último fim de semana.", "Peça correção da conversa ao ChatGPT."]}, {"d": 128, "stage": "Mês 5", "tasks": ["Leia um poema em voz alta (Project Gutenberg).", "Jogue Gartic com amigos ou Comunidade."]}, {"d": 129, "stage": "Mês 5", "tasks": ["Navegue pela seção Listen & Watch do BBC Learning English.", "Escreva sobre seu hobby favorito."]}, {"d": 130, "stage": "Mês 5", "tasks": ["Leia biografia de personagem histórico (Ducksters).", "Narre os feitos do personagem com suas palavras; grave-se."]}, {"d": 131, "stage": "Mês 5", "tasks": ["Escreva sobre viagem/férias recentes, avaliando-a.", "Use Vocabulary.com 'Random Word' e faça quizzes."]}, {"d": 132, "stage": "Mês 5", "tasks": ["Procure vocabulário de objetos de um cômodo (Reverso Context).", "Faça 5 frases sobre o dia (dicionário Oxford)."]}, {"d": 133, "stage": "Mês 5", "tasks": ["Escreva resumo da semana; poste na Comunidade.", "Assista a filme/série com legendas."]}, {"d": 134, "stage": "Mês 5", "tasks": ["Leia notícia sobre seu esporte favorito (BBC Sport).", "Escreva resumo sobre o que leu; poste na Comunidade."]}, {"d": 135, "stage": "Mês 5", "tasks": ["Pesquise regras do esporte lido ontem (Wikipedia).", "Assista vídeo no YouTube sobre o esporte, sem legendas."]}, {"d": 136, "stage": "Mês 5", "tasks": ["Escolha um Word Search sobre esporte.", "Faça frases usando as palavras encontradas; poste."]}, {"d": 137, "stage": "Mês 5", "tasks": ["Converse com o ChatGPT sobre esportes.", "Peça correção da conversa ao ChatGPT."]}, {"d": 138, "stage": "Mês 5", "tasks": ["Escolha um jogo no TinyTap.", "Escolha e leia uma notícia (níveis 2-3)."]}, {"d": 139, "stage": "Mês 5", "tasks": ["Sintonize rádio (Radio Garden) e ouça anúncios.", "Escolha um Word Search e divirta-se."]}, {"d": 140, "stage": "Mês 5", "tasks": ["Escute um episódio do Podcast 'This American Life'.", "Escreva resumo do episódio; poste na Comunidade."]}, {"d": 141, "stage": "Mês 5", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Mantenha um diário da semana."]}, {"d": 142, "stage": "Mês 5", "tasks": ["Leia embalagens de produtos (loja física ou online).", "Descreva um projeto futuro e como planeja realizá-lo."]}, {"d": 143, "stage": "Mês 5", "tasks": ["Jogue o Baba Dum em inglês.", "Faça uma oração em inglês."]}, {"d": 144, "stage": "Mês 5", "tasks": ["Imagine reservar um hotel; escreva o diálogo com atendente.", "Se não tiver parceiro, pratique roleplay com o ChatGPT."]}, {"d": 145, "stage": "Mês 5", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Escreva 5 frases com palavras desconhecidas; compartilhe."]}, {"d": 146, "stage": "Mês 5", "tasks": ["Leia o diário semanal; peça feedback na Comunidade.", "Escolha um jogo no TinyTap."]}, {"d": 147, "stage": "Mês 5", "tasks": ["Mantenha um diário durante a semana.", "Encontre e leia histórias curtas (Gutenberg/Wattpad)."]}, {"d": 148, "stage": "Mês 5", "tasks": ["Assista trechos de série/filme imitando falas dos atores.", "Jogue uma partida de CrossWord Puzzle."]}, {"d": 149, "stage": "Mês 5", "tasks": ["Escreva 5 frases sobre o dia; poste na Comunidade.", "Ouça diálogos simples no Elllo."]}, {"d": 150, "stage": "Mês 5", "tasks": ["Visite BBC News/CNN e leia artigos.", "Escreva resumo sobre a notícia; poste na Comunidade."]}, {"d": 151, "stage": "Mês 6", "tasks": ["Assista vídeo no YouTube (compreensão auditiva, repita trechos).", "Compartilhe experiência de pronúncia com a comunidade."]}, {"d": 152, "stage": "Mês 6", "tasks": ["Aprenda e pratique com música favorita (Lyricstraining).", "Escolha um jogo no TinyTap."]}, {"d": 153, "stage": "Mês 6", "tasks": ["Escute leitura de história no Storyline Online.", "Pratique fala narrando o que entendeu; grave um vídeo."]}, {"d": 154, "stage": "Mês 6", "tasks": ["Escolha e assista a um TedTalks.", "Anote palavras e pesquise sinônimos (dicionário)."]}, {"d": 155, "stage": "Mês 6", "tasks": ["Visite BBC News/CNN e leia artigos.", "Jogue uma partida de Connections."]}, {"d": 156, "stage": "Mês 6", "tasks": ["Escreva comentário em post de um artista.", "Leia a mesma notícia de ontem e procure palavras novas."]}, {"d": 157, "stage": "Mês 6", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Experimente escrever poemas/letras de música; poste."]}, {"d": 158, "stage": "Mês 6", "tasks": ["Leia biografia de personagem histórico (Ducksters).", "Narre os feitos do personagem com suas palavras; grave-se."]}, {"d": 159, "stage": "Mês 6", "tasks": ["Use Vocabulary.com 'Random Word'; crie 5 frases (desafio: diálogo).", "Pratique seu vocabulário com Word Search."]}, {"d": 160, "stage": "Mês 6", "tasks": ["Pratique conversas simuladas sobre profissões/hobbies (amigo/ChatGPT).", "Leia e interaja em fóruns (Comunidade/Reddit)."]}, {"d": 161, "stage": "Mês 6", "tasks": ["Pratique vocabulário com Word Search.", "Assista a filme/série com legendas."]}, {"d": 162, "stage": "Mês 6", "tasks": ["Leia notícia sobre um artista (TMZ/Daily Mail).", "Tente imitar o artista."]}, {"d": 163, "stage": "Mês 6", "tasks": ["Escreva 5 frases sobre o dia; poste na Comunidade do Facebook.", "Ouça diálogos simples no Elllo."]}, {"d": 164, "stage": "Mês 6", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Mantenha um diário da semana."]}, {"d": 165, "stage": "Mês 6", "tasks": ["Leia um poema em voz alta (Project Gutenberg).", "Assista 15s de série/filme sem legendas, anote o entendido."]}, {"d": 166, "stage": "Mês 6", "tasks": ["Leia o diário semanal; peça feedback na Comunidade.", "Jogue partidas de Letter Box."]}, {"d": 167, "stage": "Mês 6", "tasks": ["Jogue uma partida de Connections.", "Pratique conversa com o ChatGPT sobre um assunto à escolha."]}, {"d": 168, "stage": "Mês 6", "tasks": ["Leia o diário semanal em voz alta; peça feedback.", "Escolha um Word Search e divirta-se."]}, {"d": 169, "stage": "Mês 6", "tasks": ["Fale um trava-língua.", "Visite BBC News/CNN e leia artigos."]}, {"d": 170, "stage": "Mês 6", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Escolha 5 palavras e crie frases com vocabulário recente; poste."]}, {"d": 171, "stage": "Mês 6", "tasks": ["Leia posts de redes sociais de artistas favoritos.", "Assista 15s de série/filme sem legendas, anote o entendido."]}, {"d": 172, "stage": "Mês 6", "tasks": ["Navegue pela seção Listen & Watch do BBC Learning English.", "Procure vocabulário de objetos da sala de estar; cole notas."]}, {"d": 173, "stage": "Mês 6", "tasks": ["Procure vocabulário de objetos da sala de estar; cole notas.", "Escolha e assista a um vídeo sobre casas incríveis."]}, {"d": 174, "stage": "Mês 6", "tasks": ["Jogue o Baba Dum em inglês.", "Assista a filme/série com legendas."]}, {"d": 175, "stage": "Mês 6", "tasks": ["Escreva resumo da semana; poste na Comunidade.", "Faça uma oração em inglês."]}, {"d": 176, "stage": "Mês 6", "tasks": ["Escolha um jogo no TinyTap.", "Escreva sobre seus objetivos de curto e longo prazo; poste."]}, {"d": 177, "stage": "Mês 6", "tasks": ["Encontre e leia histórias curtas (Gutenberg/Wattpad).", "Use Vocabulary.com 'Random Word' e faça quizzes."]}, {"d": 178, "stage": "Mês 6", "tasks": ["Experimente escrever poemas/letras de música; poste.", "Jogue Gartic com amigos ou Comunidade."]}, {"d": 179, "stage": "Mês 6", "tasks": ["Selecione scripts de filmes (Simply Scripts).", "Sintonize rádio (Radio Uk) e ouça anúncios."]}, {"d": 180, "stage": "Mês 6", "tasks": ["Acompanhe um canal gringo no YouTube (iso-imersão).", "Explore English Vocabulary Exercises."]}, {"d": 181, "stage": "Mês 7", "tasks": ["Explore English Vocabulary Exercises.", "Escreva frases com vocabulários aprendidos nos jogos; poste."]}, {"d": 182, "stage": "Mês 7", "tasks": ["Assista a desenhos infantis para praticar ritmo/entonação.", "Escreva resumo sobre o episódio assistido; poste."]}, {"d": 183, "stage": "Mês 7", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Mantenha um diário em inglês; grave pensamentos."]}, {"d": 184, "stage": "Mês 7", "tasks": ["Assista um vídeo do canal Big Think.", "Faça um texto sobre o que aprendeu; poste na Comunidade."]}, {"d": 185, "stage": "Mês 7", "tasks": ["Selecione e leia notícias sobre cinema no Buzzfeed.", "Escolha um jogo no TinyTap."]}, {"d": 186, "stage": "Mês 7", "tasks": ["Imagine ir a um café com amigo; escreva diálogo com atendente.", "Se necessário, pratique roleplay com o ChatGPT."]}, {"d": 187, "stage": "Mês 7", "tasks": ["Leia notícia sobre um artista (TMZ/Daily Mail).", "Tente imitar o artista; grave-se para checar progresso."]}, {"d": 188, "stage": "Mês 7", "tasks": ["Visite Word Search sobre um tema pouco familiar (ex: raças de cachorro).", "Use as palavras novas num pequeno parágrafo."]}, {"d": 189, "stage": "Mês 7", "tasks": ["Leia notícia sobre um esporte (BBC Sports/Sky Sports).", "Faça resumo do esporte com suas palavras; leia em voz alta."]}, {"d": 190, "stage": "Mês 7", "tasks": ["Assista tutorial DIY pelo áudio no YouTube.", "Jogue uma partida de Letter Box."]}, {"d": 191, "stage": "Mês 7", "tasks": ["Navegue pela seção Listen & Watch do BBC Learning English.", "Escreva texto sobre o que aprendeu com o vídeo escolhido."]}, {"d": 192, "stage": "Mês 7", "tasks": ["Faça um quiz no Merriam Webster.", "Explore comics/graphic novels (Gutenberg, Webtoon, Tapas, Comic Fury)."]}, {"d": 193, "stage": "Mês 7", "tasks": ["Leia mais trechos de 'The Little Prince'; anote palavras novas.", "Pesquise sinônimos das palavras (dicionário) e faça frases."]}, {"d": 194, "stage": "Mês 7", "tasks": ["Ouça diálogos simples no Ello (níveis 2-3).", "Anote palavras novas do diálogo; crie 5 frases e compartilhe."]}, {"d": 195, "stage": "Mês 7", "tasks": ["Faça a palavra cruzada do dia (The Atlantic).", "Leia posts de redes sociais de artistas favoritos."]}, {"d": 196, "stage": "Mês 7", "tasks": ["Faça um texto sobre a semana/rotina; poste na Comunidade.", "Relaxe assistindo a um filme/série com legendas."]}, {"d": 197, "stage": "Mês 7", "tasks": ["Escute o listening sobre mudanças (moving) e anote palavras.", "Responda o quiz do listening; use o script se precisar."]}, {"d": 198, "stage": "Mês 7", "tasks": ["Retorne ao listening e responda sobre vantagens/desvantagens de mudança.", "Escreva sobre sua experiência com mudanças de residência."]}, {"d": 199, "stage": "Mês 7", "tasks": ["Assista vídeo sobre mudança de casa (moving vlog/moving out).", "Faça anotações: para onde vão e o motivo; compartilhe."]}, {"d": 200, "stage": "Mês 7", "tasks": ["Jogue o Baba Dum em inglês.", "Escreva comentário em post de um artista; interaja com outro comentário."]}, {"d": 201, "stage": "Mês 7", "tasks": ["Assista vídeo sobre 'moving' com atividade de descrição de personagens.", "Faça o exercício de conectar nomes aos personagens pelo áudio."]}, {"d": 202, "stage": "Mês 7", "tasks": ["Converse com o ChatGPT sobre se mudar para uma nova cidade.", "Peça correção da conversa ao ChatGPT."]}, {"d": 203, "stage": "Mês 7", "tasks": ["Pratique trava-língua (Tongue Twister).", "Leia e interaja em fóruns (Comunidade/Reddit)."]}, {"d": 204, "stage": "Mês 7", "tasks": ["Escreva texto sobre sua rotina de estudos e progresso; poste.", "Grave-se narrando o texto e cheque a pronúncia."]}, {"d": 205, "stage": "Mês 7", "tasks": ["Assista a um TedTalks.", "Escreva resumo e compartilhe na Comunidade."]}, {"d": 206, "stage": "Mês 7", "tasks": ["Assista vídeo no YouTube (compreensão auditiva, repita trechos).", "Compartilhe experiência de pronúncia com a Comunidade."]}, {"d": 207, "stage": "Mês 7", "tasks": ["Escolha e leia uma notícia na Newsweek.", "Pesquise no YouTube vídeo sobre a notícia lida ontem."]}, {"d": 208, "stage": "Mês 7", "tasks": ["Faça resumo da história lida ontem usando palavras aprendidas.", "Pratique fala narrando a história; grave e poste."]}, {"d": 209, "stage": "Mês 7", "tasks": ["Pesquise no YouTube vídeo sobre a notícia lida ontem.", "Faça 5 frases sobre o dia (dicionário Oxford)."]}, {"d": 210, "stage": "Mês 7", "tasks": ["Aprenda com sua música favorita (Lyricstraining); cante ao final.", "Faça frases com palavras novas da música; poste."]}, {"d": 211, "stage": "Mês 8", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Escolha 5 palavras e crie frases com vocabulário recente; poste."]}, {"d": 212, "stage": "Mês 8", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Escreva resenha sobre o audiobook; poste na Comunidade."]}, {"d": 213, "stage": "Mês 8", "tasks": ["Escreva carta/e-mail sobre lembrança de infância (Collins).", "Pesquise conjugação de verbos no Cooljugator; leia em voz alta."]}, {"d": 214, "stage": "Mês 8", "tasks": ["Fale um trava-língua.", "Leia o e-mail/carta em voz alta (para a pessoa, se possível)."]}, {"d": 215, "stage": "Mês 8", "tasks": ["Escreva comentário em matéria/post sobre assunto que domina; interaja.", "Explore comics/graphic novels."]}, {"d": 216, "stage": "Mês 8", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Assista a filme/série já conhecido sem legendas; anote descobertas."]}, {"d": 217, "stage": "Mês 8", "tasks": ["Assista a filme/série já conhecido, sem legendas.", "Escreva resumo do audiobook (só fatos, sem opinião)."]}, {"d": 218, "stage": "Mês 8", "tasks": ["Relaxe com meditação guiada em inglês (Mindful).", "Faça lista de mudanças/hábitos positivos (Oxford se precisar)."]}, {"d": 219, "stage": "Mês 8", "tasks": ["Assista episódio de Talk Show (Jimmy Fallon).", "Pesquise mais sobre o artista visto; poste fatos na Comunidade."]}, {"d": 220, "stage": "Mês 8", "tasks": ["Use Vocabulary.com 'Random Word' e faça quizzes.", "Faça frases com a palavra gerada."]}, {"d": 221, "stage": "Mês 8", "tasks": ["Assista vídeos de notícias sobre o clima (CNN Weather).", "Escreva texto sobre o clima da sua região e previsão."]}, {"d": 222, "stage": "Mês 8", "tasks": ["Visite BBC News/CNN e leia artigos.", "Procure antônimos/sinônimos das palavras anotadas (Oxford)."]}, {"d": 223, "stage": "Mês 8", "tasks": ["Leia mais trechos de 'The Little Prince'.", "Faça frases de exemplo e resumo do que leu."]}, {"d": 224, "stage": "Mês 8", "tasks": ["Escute notícias no NPR.", "Narre algumas notícias; grave um vídeo/áudio e poste."]}, {"d": 225, "stage": "Mês 8", "tasks": ["Escreva sobre planos futuros (estudos, trabalho, viagens) - Grammarly.", "Escolha um Word Search sobre esporte."]}, {"d": 226, "stage": "Mês 8", "tasks": ["Explore English Vocabulary Exercises.", "Ouça guias turísticos de Rick Steves."]}, {"d": 227, "stage": "Mês 8", "tasks": ["Leia biografia curta de um artista (Wikipedia/site oficial).", "Use Lyrics Training; anote palavras diferentes."]}, {"d": 228, "stage": "Mês 8", "tasks": ["Escreva uma história com as palavras anotadas (ou narração da letra).", "Grave-se lendo a história, cheque pronúncia."]}, {"d": 229, "stage": "Mês 8", "tasks": ["Encontre e leia histórias curtas (Gutenberg/Wattpad).", "Faça resumo da história com suas palavras; compartilhe."]}, {"d": 230, "stage": "Mês 8", "tasks": ["Experimente frases com rimas (poema/letra de música); poste.", "Jogue Gartic com amigos ou Comunidade."]}, {"d": 231, "stage": "Mês 8", "tasks": ["Faça um quiz no Merriam Webster.", "Use Vocabulary.com 'Random Word' e faça quizzes."]}, {"d": 232, "stage": "Mês 8", "tasks": ["Escolha episódio de Podcast (frases maiores).", "Use palavras desconhecidas e escreva 5 frases; compartilhe."]}, {"d": 233, "stage": "Mês 8", "tasks": ["Escolha um jogo no TinyTap.", "Aprenda com música favorita (Lyricstraining); cante ao final."]}, {"d": 234, "stage": "Mês 8", "tasks": ["Escreva 3 frases sobre o dia; poste na Comunidade.", "Ouça diálogos simples no Elllo."]}, {"d": 235, "stage": "Mês 8", "tasks": ["Jogue uma partida de Connections.", "Pratique conversa com o ChatGPT sobre notícias/vídeos vistos."]}, {"d": 236, "stage": "Mês 8", "tasks": ["Fale um trava-língua.", "Visite BBC News/CNN e leia artigos; anote palavras."]}, {"d": 237, "stage": "Mês 8", "tasks": ["Jogue o Baba Dum em inglês.", "Leia a notícia de ontem em voz alta; pratique entonação."]}, {"d": 238, "stage": "Mês 8", "tasks": ["Escreva resumo da notícia com opinião (Grammarly); poste.", "Sintonize rádio (Garden Radio) e ouça anúncios."]}, {"d": 239, "stage": "Mês 8", "tasks": ["Ouça a resenha de King Kong.", "Estude palavras/expressões destacadas; use em frases simples."]}, {"d": 240, "stage": "Mês 8", "tasks": ["Faça a palavra cruzada do dia (The Atlantic).", "Assista a desenhos infantis para praticar ritmo/entonação."]}, {"d": 241, "stage": "Mês 9", "tasks": ["Escolha um jogo no TinyTap.", "Escreva sobre uma pessoa que admira (Grammarly); poste."]}, {"d": 242, "stage": "Mês 9", "tasks": ["Descreva uma experiência cultural e como ela ampliou sua visão.", "Conheça o British Museum (vídeo com legendas)."]}, {"d": 243, "stage": "Mês 9", "tasks": ["Visite Word Search sobre comidas típicas.", "Escolha 10 palavras e escreva um texto com elas; compartilhe."]}, {"d": 244, "stage": "Mês 9", "tasks": ["Imagine comprar uma passagem (avião/ônibus/navio); escreva diálogo.", "Jogue uma partida de CrossWord Puzzle."]}, {"d": 245, "stage": "Mês 9", "tasks": ["Assista a um trecho de filme com Charlie Chaplin.", "Narre a cena para alguém ou grave-se usando bastante vocabulário."]}, {"d": 246, "stage": "Mês 9", "tasks": ["Leia mais trechos de 'The Little Prince'; anote palavras novas.", "Escreva parágrafo sobre como a história vai continuar."]}, {"d": 247, "stage": "Mês 9", "tasks": ["Assista a um vídeo sobre a Austrália.", "Anote fatos interessantes; divida com a Comunidade."]}, {"d": 248, "stage": "Mês 9", "tasks": ["Escolha e faça um Word Search sobre sinônimos.", "Faça 5 frases com as palavras vistas; poste."]}, {"d": 249, "stage": "Mês 9", "tasks": ["Assista a um TedTalks.", "Escreva resumo e compartilhe na Comunidade."]}, {"d": 250, "stage": "Mês 9", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Explore o ESL Lab."]}, {"d": 251, "stage": "Mês 9", "tasks": ["Assista vídeo no YouTube (compreensão auditiva, repita trechos).", "Compartilhe experiência de pronúncia com a comunidade."]}, {"d": 252, "stage": "Mês 9", "tasks": ["Relaxe com meditação guiada no Mindful.", "Liste hábitos implementados desde a última meditação."]}, {"d": 253, "stage": "Mês 9", "tasks": ["Leia notícia sobre um esporte (BBC Sports/Sky Sports).", "Faça resumo do esporte com suas palavras; leia em voz alta."]}, {"d": 254, "stage": "Mês 9", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Mantenha um diário em inglês; grave pensamentos."]}, {"d": 255, "stage": "Mês 9", "tasks": ["Escreva 5 frases sobre a aula; poste na Comunidade.", "Ouça diálogos simples no Elllo."]}, {"d": 256, "stage": "Mês 9", "tasks": ["Ouça listening sobre hábitos de consumo de chá.", "Responda às perguntas sobre o listening."]}, {"d": 257, "stage": "Mês 9", "tasks": ["Assista vídeo sobre locais para refeição em Londres; resuma.", "Analise seus hábitos alimentares (healthy/unhealthy)."]}, {"d": 258, "stage": "Mês 9", "tasks": ["Assista vídeo sobre Londres.", "Descreva uma paisagem como charada; poste na Comunidade."]}, {"d": 259, "stage": "Mês 9", "tasks": ["Escreva resumo da semana; poste na Comunidade.", "Assista a um filme/série com legendas."]}, {"d": 260, "stage": "Mês 9", "tasks": ["Assista vídeo sobre a rotina de um piloto, sem legendas.", "Anote a rotina dele e assista de novo com legenda."]}, {"d": 261, "stage": "Mês 9", "tasks": ["Visite BBC News/CNN e leia artigos.", "Escreva resumo sobre a notícia; poste na Comunidade."]}, {"d": 262, "stage": "Mês 9", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Use palavras desconhecidas e escreva 5 frases."]}, {"d": 263, "stage": "Mês 9", "tasks": ["Escolha um jogo no TinyTap.", "Faça frases usando as palavras aprendidas no jogo."]}, {"d": 264, "stage": "Mês 9", "tasks": ["Assista trechos de série/filme imitando falas dos atores.", "Jogue uma partida de CrossWord Puzzle."]}, {"d": 265, "stage": "Mês 9", "tasks": ["Escreva 3 frases sobre o dia; poste na Comunidade.", "Ouça diálogos simples no Elllo; salve para próximas atividades."]}, {"d": 266, "stage": "Mês 9", "tasks": ["Leia biografia de personagem histórico (Ducksters).", "Narre os feitos do personagem com suas palavras; grave-se."]}, {"d": 267, "stage": "Mês 9", "tasks": ["Descreva um local de lazer visitado recentemente (oral ou escrito).", "Escreva resenha em inglês do local; poste na Comunidade."]}, {"d": 268, "stage": "Mês 9", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Escolha 10 palavras e crie frases com vocabulário recente."]}, {"d": 269, "stage": "Mês 9", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Grave um resumo oral do audiobook com sua opinião."]}, {"d": 270, "stage": "Mês 9", "tasks": ["Jogue o The Missing Letter.", "Pesquise a palavra do dia no New York Times; crie 3 frases."]}, {"d": 271, "stage": "Mês 10", "tasks": ["Assista a um TedTalks.", "Faça duas frases com cada palavra desconhecida relevante ao tema."]}, {"d": 272, "stage": "Mês 10", "tasks": ["Ouça listening sobre Egyptian Food; escreva sua opinião.", "Jogue uma partida de Connections."]}, {"d": 273, "stage": "Mês 10", "tasks": ["Experimente frases com rimas; poste na Comunidade.", "Jogue Gartic com amigos ou Comunidade."]}, {"d": 274, "stage": "Mês 10", "tasks": ["Assista vídeo sobre Easy Habits.", "Faça lista de hábitos a incorporar; compartilhe."]}, {"d": 275, "stage": "Mês 10", "tasks": ["Assista vídeos de notícias sobre clima (CNN Weather).", "Escreva texto sobre clima da região e previsão."]}, {"d": 276, "stage": "Mês 10", "tasks": ["Leia mais trechos de 'The Little Prince'; interprete o texto.", "Escreva 5 perguntas sobre o que leu (não responda ainda)."]}, {"d": 277, "stage": "Mês 10", "tasks": ["Escute os trechos lidos ontem; pause e repita em voz alta.", "Responda às perguntas criadas no dia anterior."]}, {"d": 278, "stage": "Mês 10", "tasks": ["Assista vídeo no YouTube (compreensão auditiva, repita trechos).", "Compartilhe experiência de pronúncia com a comunidade."]}, {"d": 279, "stage": "Mês 10", "tasks": ["Aprenda com música favorita (Lyricstraining); cante ao final.", "Escreva 5 frases com palavras novas da música."]}, {"d": 280, "stage": "Mês 10", "tasks": ["Jogue o Baba Dum em inglês.", "Fale um trava-língua."]}, {"d": 281, "stage": "Mês 10", "tasks": ["Escolha e faça um Word Search sobre sinônimos.", "Leia e interaja em fóruns (Comunidade Facebook/Reddit)."]}, {"d": 282, "stage": "Mês 10", "tasks": ["Escolha uma receita no Tasty.", "Assista ao vídeo da receita e pratique a pronúncia."]}, {"d": 283, "stage": "Mês 10", "tasks": ["Leia posts de redes sociais de artistas favoritos.", "Assista 15s de série/filme sem legendas, anote o entendido."]}, {"d": 284, "stage": "Mês 10", "tasks": ["Escreva 5 frases sobre a aula; poste na Comunidade.", "Ouça diálogos simples no Elllo; anote palavras novas."]}, {"d": 285, "stage": "Mês 10", "tasks": ["Ouça/leia histórias no Storyline.", "Realize atividade sobre o tema no Wordwall."]}, {"d": 286, "stage": "Mês 10", "tasks": ["Assista a um trecho de filme com Charlie Chaplin.", "Conte ou grave-se narrando a cena."]}, {"d": 287, "stage": "Mês 10", "tasks": ["Jogue o The Missing Letter.", "Pesquise a palavra do dia no New York Times; crie 3 frases."]}, {"d": 288, "stage": "Mês 10", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Use palavras desconhecidas e escreva 5 frases."]}, {"d": 289, "stage": "Mês 10", "tasks": ["Use Vocabulary.com 'Random Word' e faça quizzes.", "Faça frases com a palavra gerada."]}, {"d": 290, "stage": "Mês 10", "tasks": ["Leia mais trechos de 'The Little Prince'.", "Selecione 10 palavras e procure sinônimos (dicionário)."]}, {"d": 291, "stage": "Mês 10", "tasks": ["Assista ao vídeo 'Imagine a world without music'.", "Escreva 10 adjetivos sobre música e sinônimos/antônimos (Thesaurus)."]}, {"d": 292, "stage": "Mês 10", "tasks": ["Assista a um tour pela cidade de Londres.", "Monte um roteiro de viagem com base no vídeo."]}, {"d": 293, "stage": "Mês 10", "tasks": ["Escolha uma cidade/estado e divirta-se com Word Search.", "Pesquise curiosidades sobre o local (Wikipédia); compartilhe."]}, {"d": 294, "stage": "Mês 10", "tasks": ["Acesse o site da ONU e leia sobre as 17 metas.", "Escreva resumo do que aprendeu; poste na Comunidade."]}, {"d": 295, "stage": "Mês 10", "tasks": ["Assista vídeos de notícias sobre clima (CNN Weather).", "Escreva texto sobre clima da região; use vocabulário mais complexo."]}, {"d": 296, "stage": "Mês 10", "tasks": ["Escreva sobre um de seus hobbies (como conheceu, por que gosta).", "Procure um vídeo sobre esse hobby; anote vocabulário específico."]}, {"d": 297, "stage": "Mês 10", "tasks": ["Use o vocabulário do vídeo sobre hobby num texto curto.", "Sintonize rádio (Radio Uk) e ouça anúncios."]}, {"d": 298, "stage": "Mês 10", "tasks": ["Escolha episódio de Podcast sobre hobbies (frases maiores).", "Escreva sobre hobbies descobertos ouvindo o podcast."]}, {"d": 299, "stage": "Mês 10", "tasks": ["Escolha scripts de filmes (Simply Scripts).", "Escreva resenha do filme assistido; poste em redes/Comunidade."]}, {"d": 300, "stage": "Mês 10", "tasks": ["Tente imitar um ator do filme escolhido (entonação, trejeitos).", "Pesquise sobre o filme (Letterbox); interaja em resenhas."]}, {"d": 301, "stage": "Mês 11", "tasks": ["Faça a palavra cruzada do dia (The Atlantic).", "Assista a desenhos infantis para praticar ritmo/entonação."]}, {"d": 302, "stage": "Mês 11", "tasks": ["Mantenha um diário da semana; compartilhe na Comunidade.", "Jogue uma partida de Letter Box."]}, {"d": 303, "stage": "Mês 11", "tasks": ["Assista vídeo sobre como evitar má comunicação; anote dicas.", "Assista de novo com legendas; escreva resumo; poste."]}, {"d": 304, "stage": "Mês 11", "tasks": ["Leia mais trechos de 'The Little Prince'.", "Escute o áudio do trecho lido, pause e repita em voz alta."]}, {"d": 305, "stage": "Mês 11", "tasks": ["Escolha e assista a um vídeo do Ted Ed.", "Faça o quiz do vídeo clicando em 'Think'."]}, {"d": 306, "stage": "Mês 11", "tasks": ["Jogue uma partida de Crossword Puzzle.", "Faça 5 frases com palavras vistas no jogo."]}, {"d": 307, "stage": "Mês 11", "tasks": ["Jogue uma partida de Connections.", "Pratique conversa com o ChatGPT sobre um assunto visto antes."]}, {"d": 308, "stage": "Mês 11", "tasks": ["Leia o diário semanal; peça feedback na Comunidade.", "Fale um trava-língua."]}, {"d": 309, "stage": "Mês 11", "tasks": ["Descreva um local de lazer, comparando com outros visitados.", "Escreva resenha em inglês do local; poste na Comunidade."]}, {"d": 310, "stage": "Mês 11", "tasks": ["Jogue o The Missing Letter.", "Pesquise a palavra do dia no New York Times; crie 3 frases."]}, {"d": 311, "stage": "Mês 11", "tasks": ["Faça um quiz no Merriam Webster.", "Selecione e escute rádios do mundo (Radio Garden)."]}, {"d": 312, "stage": "Mês 11", "tasks": ["Escreva 5 frases sobre a aula; poste na Comunidade do Facebook.", "Ouça diálogos simples no Elllo."]}, {"d": 313, "stage": "Mês 11", "tasks": ["Relaxe com meditação guiada no Mindful.", "Liste hábitos implementados desde a última meditação."]}, {"d": 314, "stage": "Mês 11", "tasks": ["Ouça o audiobook do dia no Blinkist.", "Grave um resumo oral do audiobook com sua opinião."]}, {"d": 315, "stage": "Mês 11", "tasks": ["Faça a palavra cruzada do dia (The Atlantic).", "Assista a desenhos infantis para praticar ritmo/entonação."]}, {"d": 316, "stage": "Mês 11", "tasks": ["Leia mais trechos de 'The Little Prince'.", "Escreva resumo do que leu e seus momentos favoritos."]}, {"d": 317, "stage": "Mês 11", "tasks": ["Escute uma música que gosta; anote palavras/frases conhecidas.", "Interprete a música num texto; compartilhe na Comunidade."]}, {"d": 318, "stage": "Mês 11", "tasks": ["Use Lyrics Training com a mesma música (preencher lacunas).", "Cante a música ao final para praticar pronúncia."]}, {"d": 319, "stage": "Mês 11", "tasks": ["Assista a um vídeo do History Channel; repita frases.", "Assista a entrevistas em 'The Diary of a CEO'."]}, {"d": 320, "stage": "Mês 11", "tasks": ["Escreva resumo do que aprendeu; compartilhe na comunidade.", "Anote ideias mais interessantes; compartilhe na Comunidade."]}, {"d": 321, "stage": "Mês 11", "tasks": ["Leia notícia sobre um artista (TMZ/Daily Mail).", "Selecione e escute notícias na rádio NPR."]}, {"d": 322, "stage": "Mês 11", "tasks": ["Tente imitar o artista (entonação, trejeitos, pronúncia); grave-se.", "Escreva resumo sobre o que leu; poste na Comunidade."]}, {"d": 323, "stage": "Mês 11", "tasks": ["Ouça um listening sobre música na BBC.", "Escreva sobre seu estilo de música e cantores favoritos; convide alguém."]}, {"d": 324, "stage": "Mês 11", "tasks": ["Encontre videoclipe de um artista do estilo descrito; narre a história.", "Imagine dirigir o videoclipe da sua música favorita; compartilhe."]}, {"d": 325, "stage": "Mês 11", "tasks": ["Vá ao Lyricstraining e pesquise sua música favorita.", "Anote palavras interessantes/diferentes e seu significado."]}, {"d": 326, "stage": "Mês 11", "tasks": ["Crie cartões físicos com palavras da música e sorteie-os.", "Procure antônimos/sinônimos das palavras (Oxford)."]}, {"d": 327, "stage": "Mês 11", "tasks": ["Tente imitar seu cantor(a) favorito; grave-se para checar progresso.", "Use a expressão 'go back to your roots' num texto pessoal."]}, {"d": 328, "stage": "Mês 11", "tasks": ["Leia trecho sobre 'nostalgic memory'; anote palavras/expressões.", "Assista vídeo sobre o mesmo assunto (nostalgic memory)."]}, {"d": 329, "stage": "Mês 11", "tasks": ["Faça resumo sobre o vídeo de nostalgic memory.", "Responda: qual sua lembrança nostálgica mais forte? (grave/escreva)."]}, {"d": 330, "stage": "Mês 11", "tasks": ["Divirta-se com entrevistas do The Hot Ones.", "Escreva mais 5 perguntas para complementar a entrevista."]}, {"d": 331, "stage": "Mês 12", "tasks": ["Use Vocabulary.com 'Random Word' e faça quizzes.", "Faça 5 frases usando a palavra aprendida."]}, {"d": 332, "stage": "Mês 12", "tasks": ["Assista a desenhos infantis para praticar ritmo/entonação.", "Imagine ser roteirista e crie um episódio novo; poste resumo."]}, {"d": 333, "stage": "Mês 12", "tasks": ["Leia mais trechos de 'The Little Prince' (nível 2 ou 3).", "Escute o áudio da história, pause e repita em voz alta."]}, {"d": 334, "stage": "Mês 12", "tasks": ["Jogue Gartic com amigos ou Comunidade.", "Escreva sobre sua rotina/expectativas dos últimos meses; poste."]}, {"d": 335, "stage": "Mês 12", "tasks": ["Escolha episódio de Podcast e baixe transcrição.", "Escreva resumo e opinião sobre o tópico do Podcast."]}, {"d": 336, "stage": "Mês 12", "tasks": ["Faça um quiz no Merriam Webster.", "Selecione e escute rádios do mundo (Radio Garden)."]}, {"d": 337, "stage": "Mês 12", "tasks": ["Escolha e faça um Word Search sobre sinônimos.", "Leia e interaja em fóruns (Comunidade Facebook/Reddit)."]}, {"d": 338, "stage": "Mês 12", "tasks": ["Leia posts de redes sociais de artistas favoritos.", "Assista 15s de série/filme sem legendas, anote o entendido."]}, {"d": 339, "stage": "Mês 12", "tasks": ["Ouça/leia histórias no Storyline.", "Realize atividade sobre o tema no Wordwall."]}, {"d": 340, "stage": "Mês 12", "tasks": ["Faça a palavra cruzada do dia (The Atlantic).", "Escolha e assista a um vídeo do Ted Ed; faça o quiz 'Think'."]}, {"d": 341, "stage": "Mês 12", "tasks": ["Escolha e assista a um vídeo do Ted Ed.", "Pesquise um restaurante famoso e leia menu/história em voz alta."]}, {"d": 342, "stage": "Mês 12", "tasks": ["Escolha e assista a um vídeo do History Channel.", "Escreva resumo do que aprendeu; poste na Comunidade."]}, {"d": 343, "stage": "Mês 12", "tasks": ["Faça a palavra cruzada diária do Washington Post.", "Escolha 10 palavras e crie frases com vocabulário recente."]}, {"d": 344, "stage": "Mês 12", "tasks": ["Leia mais trechos de 'The Little Prince'.", "Escreva texto sobre conclusões da história; poste na Comunidade."]}, {"d": 345, "stage": "Mês 12", "tasks": ["Aprenda com música favorita (Lyricstraining).", "Tente imitar seu cantor(a) favorito; grave-se."]}, {"d": 346, "stage": "Mês 12", "tasks": ["Leia artigo sobre 'Neuroscientists Reveal Secret of Superagers'.", "Anote o que achou interessante e dê opinião; poste."]}, {"d": 347, "stage": "Mês 12", "tasks": ["Assista ao vídeo 'Why are earthquakes so hard to predict?'.", "Faça o quiz do vídeo; leitura complementar em 'Dig deeper'."]}, {"d": 348, "stage": "Mês 12", "tasks": ["Ouça diálogos simples no Elllo (nível avançado).", "Continue a história do diálogo com pelo menos 5 frases."]}, {"d": 349, "stage": "Mês 12", "tasks": ["Leia um poema em voz alta (Project Gutenberg).", "Jogue partidas de Letter Box."]}, {"d": 350, "stage": "Mês 12", "tasks": ["Converse com o ChatGPT sobre um assunto à escolha.", "Peça correção da conversa ao ChatGPT."]}, {"d": 351, "stage": "Mês 12", "tasks": ["Escolha um destino nos guias de Rick Steves e ouça sobre ele.", "Crie seu roteiro para o destino e compartilhe na Comunidade."]}, {"d": 352, "stage": "Mês 12", "tasks": ["Escolha 2-3 lugares do roteiro; pesquise a fundo e escreva motivos.", "Procure vlog no YouTube de quem já visitou; anote vocabulário."]}, {"d": 353, "stage": "Mês 12", "tasks": ["Conte sobre uma viagem/férias recentes (grave-se sem ler).", "Escreva resenha em inglês do local (Google)."]}, {"d": 354, "stage": "Mês 12", "tasks": ["Volte ao roteiro de viagem; pesquise comidas típicas e receita.", "Converse com o ChatGPT sobre comidas típicas."]}, {"d": 355, "stage": "Mês 12", "tasks": ["Imagine comprar passagem para o destino; escreva o diálogo.", "Jogue uma partida de CrossWord Puzzle."]}, {"d": 356, "stage": "Mês 12", "tasks": ["Assista a vídeo sobre os locais mais visitados do mundo em 2023.", "Monte um roteiro de viagem com o Google Maps; compartilhe."]}, {"d": 357, "stage": "Mês 12", "tasks": ["Descreva um projeto futuro e como planeja realizá-lo.", "Anote países citados; diga quais visitaria e por quê; jogue Connections."]}, {"d": 358, "stage": "Mês 12", "tasks": ["Escolha e leia uma notícia na Newsweek.", "Anote palavras compreendidas e pesquise sinônimos."]}, {"d": 359, "stage": "Mês 12", "tasks": ["Relaxe com meditação guiada no Mindful.", "Use Vocabulary.com 'Random Word' e faça quizzes."]}, {"d": 360, "stage": "Mês 12", "tasks": ["Estamos chegando ao final do Cronograma! Escreva ou grave um vídeo sobre sua trajetória.", "Poste na Comunidade e celebre sua vitória com os colegas!"]}];
+const LINKMAP = {"ChatGPT": "https://chat.openai.com", "Reverso Context": "https://context.reverso.net/traducao/", "Collins": "https://www.collinsdictionary.com/", "Google Tradutor": "https://translate.google.com/", "Google Maps": "https://maps.google.com/", "Wikipedia": "https://www.wikipedia.org/", "Wikipédia": "https://pt.wikipedia.org/", "BBC News": "https://www.bbc.com/news", "BBC Sport": "https://www.bbc.com/sport", "BBC Sports": "https://www.bbc.com/sport", "Sky Sports": "https://www.skysports.com/", "CNN Weather": "https://edition.cnn.com/weather", "CNN": "https://edition.cnn.com/", "Merriam Webster": "https://www.merriam-webster.com/word-of-the-day", "Merriam-Webster": "https://www.merriam-webster.com/word-of-the-day", "Project Gutenberg": "https://www.gutenberg.org/", "Gutenberg": "https://www.gutenberg.org/", "Wattpad": "https://www.wattpad.com/", "Webtoon": "https://www.webtoons.com/", "Tapas": "https://tapas.io/", "Comic Fury": "https://comicfury.com/", "Reddit": "https://www.reddit.com/", "Washington Post": "https://www.washingtonpost.com/crossword-puzzles/daily/", "The Atlantic": "https://www.theatlantic.com/crossword/", "NPR": "https://www.npr.org/", "Newsweek": "https://www.newsweek.com/", "TMZ": "https://www.tmz.com/", "Daily Mail": "https://www.dailymail.co.uk/", "Blinkist": "https://www.blinkist.com/", "Storyline Online": "https://storylineonline.net/", "Storyline": "https://storylineonline.net/", "ESL Lab": "https://www.esl-lab.com/", "Elllo": "https://elllo.org/", "Ello": "https://elllo.org/", "Lyricstraining": "https://lyricstraining.com/", "Lyrics Training": "https://lyricstraining.com/", "Oxford": "https://www.oxfordlearnersdictionaries.com/", "Thesaurus": "https://www.thesaurus.com/", "Vocabulary.com": "https://www.vocabulary.com/", "Wordwall": "https://wordwall.net/", "Word Wall": "https://wordwall.net/", "TinyTap": "https://www.tinytap.com/", "Radio Garden": "https://radio.garden/", "Garden Radio": "https://radio.garden/", "Radio Uk": "https://radio.garden/", "Simply Scripts": "https://www.simplyscripts.com/", "Rick Steves": "https://www.ricksteves.com/watch-read-listen/audio-europe", "British Council": "https://learnenglish.britishcouncil.org/", "Mindful": "https://www.mindful.org/", "Tasty": "https://tasty.co/", "National Geographic": "https://www.nationalgeographic.com/", "Ducksters": "https://www.ducksters.com/biography/", "History Channel": "https://www.history.com/", "TedEd": "https://ed.ted.com/", "Ted Ed": "https://ed.ted.com/", "TedTalks": "https://www.ted.com/talks", "Ted Talks": "https://www.ted.com/talks", "The Diary of a CEO": "https://www.youtube.com/@TheDiaryOfACEO", "Cooljugator": "https://cooljugator.com/", "Connections": "https://www.nytimes.com/games/connections", "Wordle": "https://www.nytimes.com/games/wordle/index.html", "Spelling Bee": "https://www.nytimes.com/puzzles/spelling-bee", "Letter Box": "https://www.nytimes.com/puzzles/letter-boxed", "CrossWord Puzzle": "https://www.nytimes.com/crosswords", "New York Times": "https://www.nytimes.com/", "Baba Dum": "https://www.babadum.com/", "Gartic": "https://gartic.com.br/", "The Hot Ones": "https://www.youtube.com/@FirstWeFeast", "The Prayer Wall": "https://www.theprayerwall.com/", "Click to Pray": "https://www.clicktopray.org/", "Buzzfeed": "https://www.buzzfeed.com/", "Big Think": "https://bigthink.com/", "Grammarly": "https://www.grammarly.com/", "YouTube": "https://www.youtube.com/", "British Museum": "https://www.britishmuseum.org/", "Word Search": "https://thewordsearch.com/", "The Missing Letter": "https://www.the-word-search.com/", "Cruzadinhas": "https://cruzadinhas.com.br/"};
+const STAGES_META = [{"index": 1, "name": "Mês 1", "defaultOpen": false}, {"index": 2, "name": "Mês 2", "defaultOpen": false}, {"index": 3, "name": "Mês 3", "defaultOpen": false}, {"index": 4, "name": "Mês 4", "defaultOpen": false}, {"index": 5, "name": "Mês 5", "defaultOpen": false}, {"index": 6, "name": "Mês 6", "defaultOpen": false}, {"index": 7, "name": "Mês 7", "defaultOpen": false}, {"index": 8, "name": "Mês 8", "defaultOpen": false}, {"index": 9, "name": "Mês 9", "defaultOpen": false}, {"index": 10, "name": "Mês 10", "defaultOpen": false}, {"index": 11, "name": "Mês 11", "defaultOpen": false}, {"index": 12, "name": "Mês 12", "defaultOpen": false}];
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "trilha_progress_v1";
+  let progress = {}; // { "1": {a:bool, q:bool, t:[bool,...]} }
+  let saveTimer = null;
+
+  // ---------- storage helpers ----------
+  async function loadProgress() {
+    try {
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if (res && res.value) {
+        progress = JSON.parse(res.value);
+      }
+    } catch (e) {
+      progress = {};
+    }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveProgress, 450);
+  }
+
+  async function saveProgress() {
+    try {
+      const ok = await window.storage.set(STORAGE_KEY, JSON.stringify(progress), false);
+      showStatus(ok ? "salvo ✓" : "erro ao salvar", !ok);
+    } catch (e) {
+      showStatus("erro ao salvar ⚠", true);
+    }
+  }
+
+  let statusTimer = null;
+  function showStatus(msg, isErr) {
+    const el = document.getElementById("statusMsg");
+    el.textContent = msg;
+    el.classList.add("show");
+    el.classList.toggle("err", !!isErr);
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => el.classList.remove("show"), 1400);
+  }
+
+  function getDayState(d) {
+    if (!progress[d]) {
+      const day = DAYS[d - 1];
+      progress[d] = { a: false, q: false, t: new Array(day.tasks.length).fill(false) };
+    }
+    return progress[d];
+  }
+
+  // ---------- linkify ----------
+  const linkKeys = Object.keys(LINKMAP).sort((a, b) => b.length - a.length);
+  function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  function linkify(text) {
+    let html = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    const used = new Set();
+    for (const key of linkKeys) {
+      if (used.has(key.toLowerCase())) continue;
+      const url = LINKMAP[key];
+      const re = new RegExp("(" + escapeRegExp(key) + ")(?![^<]*>)", "");
+      if (re.test(html)) {
+        html = html.replace(re, `<a href="${url}" target="_blank" rel="noopener">$1</a>`);
+        used.add(key.toLowerCase());
+      }
+    }
+    html = html.replace(/(Comunidade)(?![^<]*>)/, '<b style="color:var(--green); font-weight:600;">$1</b>');
+    return html;
+  }
+
+  // ---------- per-day / month computation ----------
+  function dayTotals(day) {
+    return 2 + day.tasks.length;
+  }
+  function dayDone(day) {
+    const st = getDayState(day.d);
+    let n = 0;
+    if (st.a) n++;
+    if (st.q) n++;
+    n += st.t.filter(Boolean).length;
+    return n;
+  }
+  function isDayComplete(day) {
+    return dayDone(day) === dayTotals(day);
+  }
+
+  function stageDays(stageName) {
+    return DAYS.filter((d) => d.stage === stageName);
+  }
+  function stageProgress(stageName) {
+    const ds = stageDays(stageName);
+    let total = 0, done = 0;
+    ds.forEach((d) => { total += dayTotals(d); done += dayDone(d); });
+    return { total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+  }
+  function overallProgress() {
+    let total = 0, done = 0, daysDone = 0;
+    DAYS.forEach((d) => {
+      const t = dayTotals(d), dn = dayDone(d);
+      total += t; done += dn;
+      if (dn === t) daysDone++;
+    });
+    return { total, done, daysDone, pct: total ? Math.round((done / total) * 100) : 0 };
+  }
+  function scoreColor(pct) {
+    if (pct < 30) return "var(--score-red)";
+    if (pct < 55) return "var(--score-orange)";
+    if (pct < 60) return "var(--score-yellow)";
+    return "var(--score-green)";
+  }
+  function firstPendingDay() {
+    for (const d of DAYS) {
+      if (!isDayComplete(d)) return d.d;
+    }
+    return null;
+  }
+
+  // ---------- render ----------
+  function renderTrail() {
+    const wrap = document.getElementById("trailNodes");
+    wrap.innerHTML = "";
+    STAGES_META.forEach((meta) => {
+      const { pct } = stageProgress(meta.name);
+      const node = document.createElement("div");
+      node.className = "trail-node" + (pct === 100 ? " complete" : "");
+      node.innerHTML = `
+        <div class="trail-dot" style="--p:${pct}; --score-color:${scoreColor(pct)}"></div>
+        <div class="trail-label"><b>${meta.name}</b>${pct}%</div>
+      `;
+      node.addEventListener("click", () => {
+        const el = document.getElementById("stage-" + meta.index);
+        if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      });
+      wrap.appendChild(node);
+    });
+  }
+
+  function renderHeader() {
+    const { pct, done, total, daysDone } = overallProgress();
+    const ringEl = document.getElementById("ringOuter");
+    ringEl.style.setProperty("--pct", pct);
+    ringEl.style.setProperty("--score-color", scoreColor(pct));
+    document.getElementById("ringPct").textContent = pct + "%";
+    document.getElementById("statDaysDone").textContent = daysDone;
+    document.getElementById("statItemsDone").textContent = done;
+    document.getElementById("statItemsTotal").textContent = total;
+
+    document.getElementById("footBarFill").style.width = pct + "%";
+    document.getElementById("footTxt").textContent = pct + "% concluído · " + daysDone + "/360 dias";
+
+    const fp = firstPendingDay();
+    const btn = document.getElementById("currentDayBtn");
+    if (fp) {
+      btn.textContent = "Dia atual → Dia " + fp;
+      btn.disabled = false;
+    } else {
+      btn.textContent = "Trilha completa 🎉";
+      btn.disabled = true;
+    }
+  }
+
+  function renderStages() {
+    const container = document.getElementById("stages");
+    container.innerHTML = "";
+    STAGES_META.forEach((meta) => {
+      const ds = stageDays(meta.name);
+      const { pct } = stageProgress(meta.name);
+      const details = document.createElement("details");
+      details.className = "stage";
+      details.id = "stage-" + meta.index;
+      details.open = meta.defaultOpen || false;
+
+      const summary = document.createElement("summary");
+      summary.innerHTML = `
+        <div class="stage-num">${meta.index}</div>
+        <div class="stage-info">
+          <div class="stage-name">${meta.name}</div>
+          <div class="stage-range">dias ${ds[0].d}–${ds[ds.length - 1].d}</div>
+        </div>
+        <div class="stage-bar-wrap">
+          <div class="stage-bar"><i style="width:${pct}%; background:${scoreColor(pct)}"></i></div>
+          <div class="stage-pct">${pct}%</div>
+        </div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+      `;
+      details.appendChild(summary);
+
+      const body = document.createElement("div");
+      body.className = "stage-body";
+      ds.forEach((day) => body.appendChild(renderDayCard(day)));
+      details.appendChild(body);
+
+      container.appendChild(details);
+    });
+  }
+
+  function renderDayCard(day) {
+    const st = getDayState(day.d);
+    const total = dayTotals(day);
+    const done = dayDone(day);
+    const complete = done === total;
+    const card = document.createElement("div");
+    card.className = "day" + (complete ? " done" : "");
+    card.id = "day-" + day.d;
+
+    const head = document.createElement("div");
+    head.className = "day-head";
+    head.innerHTML = `
+      <span class="day-num">${complete ? "✓ " : ""}Dia ${day.d}</span>
+      <div class="day-mini"><i style="width:${Math.round((done / total) * 100)}%"></i></div>
+      <button class="day-toggle-all">${complete ? "desmarcar" : "marcar tudo"}</button>
+    `;
+    head.querySelector(".day-toggle-all").addEventListener("click", () => {
+      const target = !complete;
+      st.a = target; st.q = target;
+      st.t = st.t.map(() => target);
+      scheduleSave();
+      refreshDay(day.d);
+      renderHeader();
+      renderTrail();
+    });
+    card.appendChild(head);
+
+    card.appendChild(taskRow(`Assista à aula ${day.d}.`, st.a, (v) => { st.a = v; }, day.d));
+    card.appendChild(taskRow(`Faça o Quiz ${day.d}.`, st.q, (v) => { st.q = v; }, day.d));
+
+    if (day.tasks.length === 0) {
+      const e = document.createElement("div");
+      e.className = "empty-tasks";
+      e.textContent = "Sem atividades extras hoje — só aula e quiz.";
+      card.appendChild(e);
+    } else {
+      day.tasks.forEach((txt, i) => {
+        card.appendChild(taskRow(txt, st.t[i], (v) => { st.t[i] = v; }, day.d));
+      });
+    }
+    return card;
+  }
+
+  function taskRow(text, checked, onChange, dayNum) {
+    const row = document.createElement("label");
+    row.className = "task" + (checked ? " checked" : "");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = checked;
+    cb.addEventListener("change", () => {
+      onChange(cb.checked);
+      row.classList.toggle("checked", cb.checked);
+      scheduleSave();
+      renderHeader();
+      renderTrail();
+      updateDayVisual(dayNum);
+    });
+    const span = document.createElement("span");
+    span.innerHTML = linkify(text);
+    row.appendChild(cb);
+    row.appendChild(span);
+    return row;
+  }
+
+  function updateDayVisual(dayNum) {
+    const day = DAYS[dayNum - 1];
+    const card = document.getElementById("day-" + dayNum);
+    if (!card) return;
+    const total = dayTotals(day);
+    const done = dayDone(day);
+    const complete = done === total;
+    card.classList.toggle("done", complete);
+    card.querySelector(".day-mini > i").style.width = Math.round((done / total) * 100) + "%";
+    const numEl = card.querySelector(".day-num");
+    if (numEl) numEl.textContent = (complete ? "✓ " : "") + "Dia " + dayNum;
+    const btn = card.querySelector(".day-toggle-all");
+    if (btn) btn.textContent = complete ? "desmarcar" : "marcar tudo";
+  }
+
+  function refreshDay(dayNum) {
+    const day = DAYS[dayNum - 1];
+    const old = document.getElementById("day-" + dayNum);
+    if (!old) return;
+    const fresh = renderDayCard(day);
+    old.replaceWith(fresh);
+  }
+
+  function jumpToDay(n) {
+    n = parseInt(n, 10);
+    if (!n || n < 1 || n > 360) return;
+    const day = DAYS[n - 1];
+    const stIdx = STAGES_META.find((m) => m.name === day.stage).index;
+    const stageEl = document.getElementById("stage-" + stIdx);
+    if (stageEl) stageEl.open = true;
+    requestAnimationFrame(() => {
+      const el = document.getElementById("day-" + n);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("flash");
+        setTimeout(() => el.classList.remove("flash"), 1000);
+      }
+    });
+  }
+
+  // ---------- init ----------
+  async function init() {
+    await loadProgress();
+
+    const fp = firstPendingDay();
+    if (fp) {
+      const st = DAYS[fp - 1].stage;
+      STAGES_META.forEach((m) => (m.defaultOpen = m.name === st));
+    } else {
+      STAGES_META[0].defaultOpen = true;
+    }
+
+    renderHeader();
+    renderTrail();
+    renderStages();
+
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    document.getElementById("currentDayBtn").addEventListener("click", () => {
+      const target = firstPendingDay();
+      if (target) jumpToDay(target);
+      else showStatus("tudo concluído! 🎉");
+    });
+
+    if (fp) setTimeout(() => jumpToDay(fp), 400);
+  }
+
+  init();
+})();
+
+</script>
+</body>
+</html>
